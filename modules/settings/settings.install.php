@@ -60,7 +60,7 @@ function settings_install($db,$drop=false,$firstInstall=false,$lang="en_us") {
         'defaultBlog' => 'news',
         'useBBCode' => '1',
         'jsEditor' => 'ckeditor',
-        'version' => 'Pre-Alpha',
+        'version' => '0.1',
         'verifyEmail' => 1,
         'requireActivation' => 0,
         'removeAttribution' => 0,
