@@ -41,7 +41,7 @@ function settings_install($db,$drop=false,$firstInstall=false,$lang="en_us") {
 	);
 	$defaultSettings = array(
         'siteTitle' => 'SiteSense',
-        'homepage' => 'default',
+        'homepage' => 'pages/home',
         'theme' => 'default',
         'characterEncoding' => 'utf-8',
         'compressionEnabled' => 0,
