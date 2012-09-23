@@ -78,6 +78,7 @@ function settings_admin_buildContent($data,$db) {
 					}
 				}
 			}
+			$data->output['secondSidebar']='<h2>Settings Saved</h2>';
 			break;
 		default:
 			// Poulate Time Zone List
