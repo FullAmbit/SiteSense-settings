@@ -56,164 +56,189 @@ function settings_admin_buildContent($data,$db) {
 		$data->output['rejectText'] = 'You do not have the permissions to access this area.';
 		return;
 	}
-	// Poulate Time Zone List
-	populateTimeZones($data);
-	// Get all groups
-	$statement=$db->query('getAllGroups','admin_users');
-	$userGroups=$statement->fetchAll();
-	$userGroups[]['groupName']='Administrators';
-	sort($userGroups);
-	$data->output['userGroups'][]=array(
-		'text'  => 'Disable auto assigning of groups',
-		'value' => '0'
-	);
-	foreach($userGroups as $userGroup) {
-		$data->output['userGroups'][]=array(
-			'text'  => $userGroup['groupName'],
-			'value' => $userGroup['groupName']
-		);
-	}
-	$data->output['settingsForm']=new formHandler('edit',$data,true);
-	$getModules = $db->query('getEnabledModules','admin_modules');
-	$modules = $getModules->fetchAll();
-	// All Enabled Modules
-	foreach($modules as $module){
-		if($module['shortName'] == 'pages' || $module['shortName'] == 'ajax' || $module['shortName'] == 'users') continue;
-		$option = array(
-			'text' => $module['shortName'],
-			'value' => $module['shortName'],
-			'optgroup' => 'Modules'
-		);
-		$data->output['settingsForm']->fields['homepage']['options'][] = $option;
-	}
-	// Get All Top Level Pages //
-	$statement = $db->prepare('getTopLevelPages','admin_pages');
-	$statement->execute();
-	$pageList = $statement->fetchAll();
-	if(count($pageList) > 0)
-	{
-		foreach($pageList as $pageItem)
-		{
-			$option = array(
-				'text' =>  $pageItem['shortName'],
-				'value' => 'pages/'.$pageItem['shortName'],
-				'optgroup' => 'Pages'
-			);
-			$data->output['settingsForm']->fields['homepage']['options'][] = $option;
-		}
-	}
-	// Get All CDN Plugins //
-	$statement = $db->prepare('getCDNPlugins','admin_plugins');
-	$statement->execute();
-	$pluginList = $statement->fetchAll();
-	foreach($pluginList as $pluginItem)
-	{
-		$option = array(
-			'text' => $pluginItem['name'],
-			'value' => $pluginItem['name']
-		);
-		$data->output['settingsForm']->fields['cdnPlugin']['options'][] = $option;
-	}
-	// Get All WYSIWYG Plugins //
-	$statement = $db->prepare('getEditorPlugins','admin_plugins');
-	$statement->execute();
-	$pluginList = $statement->fetchAll();
-	foreach($pluginList as $pluginItem)
-	{
-		$option = array(
-			'text' => $pluginItem['name'],
-			'value' => $pluginItem['name']
-		);
-		
-		$data->output['settingsForm']->fields['jsEditor']['options'][] = $option;
-	}
-	// Get All Blogs/
-	$statement = $db->prepare('getAllBlogs','admin_blogs');
-	$statement->execute();
-	$blogList = $statement->fetchAll();
-	foreach($blogList as $blogItem)
-	{
-		$option = array(
-			'text' => $blogItem['name'],
-			'value' => $blogItem['shortName']
-		);
-		
-		$data->output['settingsForm']->fields['defaultBlog']['options'][] = $option;
-	}
-	if (isset($_POST['fromForm']) && $_POST['fromForm']==$data->output['settingsForm']->fromForm) {
-		
-		if ($data->output['formOk']=$data->output['settingsForm']->validateFromPost()) {
-			$data->output['secondSidebar']='
-				<h2>Settings Saved</h2>
-				<ul class="updateList">';
-			// Parse The Footer //
-			if($data->settings['useBBCode']=='1') {
-				if(!empty(
-					$data->output['settingsForm']->fields['rawFooterContent']['updated']
-				)) {
-					common_loadPlugin($data,'bbcode');
-					$data->output['settingsForm']->fields['parsedFooterContent']['newValue']=
-					$data->plugins['bbcode']->parse(
-						$data->output['settingsForm']->fields['rawFooterContent'][
-							$data->output['settingsForm']->fields['rawFooterContent']['updated']
-						]
-						);
-				}
-			} else {
-				if(!empty(
-					$data->output['settingsForm']->fields['rawFooterContent']['updated']
-				)) {
-					$data->output['settingsForm']->fields['parsedFooterContent']['newValue']=
-						$data->output['settingsForm']->fields['rawFooterContent'][
-							$data->output['settingsForm']->fields['rawFooterContent']['updated']
-						];
-				}
+	switch($data->action[2]){
+		case 'group':
+			if(empty($data->settings[$data->action[3]])||!is_array($data->settings[$data->action[3]])){
+				$data->output['rejectError']=$data->output['rejectText']='That is not a valid settings group.';
+				return;
 			}
-			if(isset($data->output['settingsForm']->fields['parsedFooterContent']['newValue']))
-				$data->output['settingsForm']->fields['parsedFooterContent']['updated']='newValue';
-			// Loop Through Form Fields //
-			$languageExceptions = array('siteTitle','rawFooterContent','parsedFooterContent');
-			$statement=$db->prepare('updateSettings','admin_settings');
-			foreach ($data->output['settingsForm']->fields as $fieldKey => $fieldData) {
-				if (!empty($fieldData['updated'])) {
-					$data->output['secondSidebar'].='
-						<li class="changed"><b>'.$fieldKey.'</b><span> updated</span></li>';
-					
-					$statement->execute(array(
-						'value' => $fieldData[$fieldData['updated']],
-						'name' => $fieldKey
-					));
-					
-					//---Update Across All Langauges--//
-					if(!in_array($fieldKey,$languageExceptions)){
-						common_updateAcrossLanguageTables($data,$db,'settings',array('name'=>$fieldKey),array('value'=>$fieldData[$fieldData['updated']]),TRUE);
+			common_loadPhrases($data,$db,$data->action[3]);
+			$data->output['settingsForm']=new formHandler('editGroup',$data,true);
+			if (isset($_POST['fromForm']) && $_POST['fromForm']==$data->output['settingsForm']->fromForm) {		
+				if ($data->output['formOk']=$data->output['settingsForm']->validateFromPost()) {
+					$statement=$db->prepare('updateGroupedSettings','admin_settings');
+					$data->output['settingsForm']->populateFromPostData();
+					foreach ($data->output['settingsForm']->sendArray as $fieldKey => $fieldData) {
+						$statement->execute(array(
+							'value' => $fieldData,
+							'name' => substr($fieldKey,1),
+							'group' => $data->action[3]
+						));
+						common_updateAcrossLanguageTables($data,$db,'settings',array('name'=>substr($fieldKey,1),'group'=>$data->action[3]),array('value'=>$fieldData),TRUE);
 					}
-				} else $data->output['secondSidebar'].='
-					<li><b>'.$fieldKey.'</b><span> unchanged</span></li>';
+				}
 			}
-			unset($data->output['settingsForm']->fields['parsedFooterContent']);
-			$data->output['secondSidebar'].='
-				</ul>';
-		} else {
-			$data->output['secondSidebar']='
-				<h2>Error in Data</h2>
-				<p>
-					There were one or more errors. Please correct the fields with the red X next to them and try again.
-				</p>';
-		}
+			break;
+		default:
+			// Poulate Time Zone List
+			populateTimeZones($data);
+			// Get all groups
+			$statement=$db->query('getAllGroups','admin_users');
+			$userGroups=$statement->fetchAll();
+			$userGroups[]['groupName']='Administrators';
+			sort($userGroups);
+			$data->output['userGroups'][]=array(
+				'text'  => 'Disable auto assigning of groups',
+				'value' => '0'
+			);
+			foreach($userGroups as $userGroup) {
+				$data->output['userGroups'][]=array(
+					'text'  => $userGroup['groupName'],
+					'value' => $userGroup['groupName']
+				);
+			}
+			$data->output['settingsForm']=new formHandler('edit',$data,true);
+			$getModules = $db->query('getEnabledModules','admin_modules');
+			$modules = $getModules->fetchAll();
+			// All Enabled Modules
+			foreach($modules as $module){
+				if($module['shortName'] == 'pages' || $module['shortName'] == 'ajax' || $module['shortName'] == 'users') continue;
+				$option = array(
+					'text' => $module['shortName'],
+					'value' => $module['shortName'],
+					'optgroup' => 'Modules'
+				);
+				$data->output['settingsForm']->fields['homepage']['options'][] = $option;
+			}
+			// Get All Top Level Pages //
+			$statement = $db->prepare('getTopLevelPages','admin_pages');
+			$statement->execute();
+			$pageList = $statement->fetchAll();
+			if(count($pageList) > 0)
+			{
+				foreach($pageList as $pageItem)
+				{
+					$option = array(
+						'text' =>  $pageItem['shortName'],
+						'value' => 'pages/'.$pageItem['shortName'],
+						'optgroup' => 'Pages'
+					);
+					$data->output['settingsForm']->fields['homepage']['options'][] = $option;
+				}
+			}
+			// Get All CDN Plugins //
+			$statement = $db->prepare('getCDNPlugins','admin_plugins');
+			$statement->execute();
+			$pluginList = $statement->fetchAll();
+			foreach($pluginList as $pluginItem)
+			{
+				$option = array(
+					'text' => $pluginItem['name'],
+					'value' => $pluginItem['name']
+				);
+				$data->output['settingsForm']->fields['cdnPlugin']['options'][] = $option;
+			}
+			// Get All WYSIWYG Plugins //
+			$statement = $db->prepare('getEditorPlugins','admin_plugins');
+			$statement->execute();
+			$pluginList = $statement->fetchAll();
+			foreach($pluginList as $pluginItem)
+			{
+				$option = array(
+					'text' => $pluginItem['name'],
+					'value' => $pluginItem['name']
+				);
+				
+				$data->output['settingsForm']->fields['jsEditor']['options'][] = $option;
+			}
+			// Get All Blogs/
+			$statement = $db->prepare('getAllBlogs','admin_blogs');
+			$statement->execute();
+			$blogList = $statement->fetchAll();
+			foreach($blogList as $blogItem)
+			{
+				$option = array(
+					'text' => $blogItem['name'],
+					'value' => $blogItem['shortName']
+				);
+				
+				$data->output['settingsForm']->fields['defaultBlog']['options'][] = $option;
+			}
+			if (isset($_POST['fromForm']) && $_POST['fromForm']==$data->output['settingsForm']->fromForm) {
+				
+				if ($data->output['formOk']=$data->output['settingsForm']->validateFromPost()) {
+					$data->output['secondSidebar']='
+						<h2>Settings Saved</h2>
+						<ul class="updateList">';
+					// Parse The Footer //
+					if($data->settings['useBBCode']=='1') {
+						if(!empty(
+							$data->output['settingsForm']->fields['rawFooterContent']['updated']
+						)) {
+							common_loadPlugin($data,'bbcode');
+							$data->output['settingsForm']->fields['parsedFooterContent']['newValue']=
+							$data->plugins['bbcode']->parse(
+								$data->output['settingsForm']->fields['rawFooterContent'][
+									$data->output['settingsForm']->fields['rawFooterContent']['updated']
+								]
+								);
+						}
+					} else {
+						if(!empty(
+							$data->output['settingsForm']->fields['rawFooterContent']['updated']
+						)) {
+							$data->output['settingsForm']->fields['parsedFooterContent']['newValue']=
+								$data->output['settingsForm']->fields['rawFooterContent'][
+									$data->output['settingsForm']->fields['rawFooterContent']['updated']
+								];
+						}
+					}
+					if(isset($data->output['settingsForm']->fields['parsedFooterContent']['newValue']))
+						$data->output['settingsForm']->fields['parsedFooterContent']['updated']='newValue';
+					// Loop Through Form Fields //
+					$languageExceptions = array('siteTitle','rawFooterContent','parsedFooterContent');
+					$statement=$db->prepare('updateSettings','admin_settings');
+					foreach ($data->output['settingsForm']->fields as $fieldKey => $fieldData) {
+						if (!empty($fieldData['updated'])) {
+							$data->output['secondSidebar'].='
+								<li class="changed"><b>'.$fieldKey.'</b><span> updated</span></li>';
+							
+							$statement->execute(array(
+								'value' => $fieldData[$fieldData['updated']],
+								'name' => $fieldKey
+							));
+							
+							//---Update Across All Langauges--//
+							if(!in_array($fieldKey,$languageExceptions)){
+								common_updateAcrossLanguageTables($data,$db,'settings',array('name'=>$fieldKey),array('value'=>$fieldData[$fieldData['updated']]),TRUE);
+							}
+						} else $data->output['secondSidebar'].='
+							<li><b>'.$fieldKey.'</b><span> unchanged</span></li>';
+					}
+					unset($data->output['settingsForm']->fields['parsedFooterContent']);
+					$data->output['secondSidebar'].='
+						</ul>';
+				} else {
+					$data->output['secondSidebar']='
+						<h2>Error in Data</h2>
+						<p>
+							There were one or more errors. Please correct the fields with the red X next to them and try again.
+						</p>';
+				}
+			}
+			/* some values need logic flow to set */
+			$list=glob('themes/*');
+			foreach ($list as $theme) {
+				if (filetype($theme)=='dir') {
+					$data->output['settingsForm']->fields['theme']['options'][]=substr(strrchr($theme,'/'),1);
+				}
+			}
+			$data->output['pageTitle']='Global Settings';
+			break;
 	}
-	/* some values need logic flow to set */
-	$list=glob('themes/*');
-	foreach ($list as $theme) {
-		if (filetype($theme)=='dir') {
-			$data->output['settingsForm']->fields['theme']['options'][]=substr(strrchr($theme,'/'),1);
-		}
-	}
-	$data->output['pageTitle']='Global Settings';
 }
 function settings_admin_content($data) {
-	if(isset($data->output['rejectError']))
-	{
+	if(isset($data->output['rejectError'])){
 		theme_rejectError($data);
 	} else {
 		theme_buildForm($data->output['settingsForm']);

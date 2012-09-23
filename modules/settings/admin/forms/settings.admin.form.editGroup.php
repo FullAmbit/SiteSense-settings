@@ -22,24 +22,21 @@
 * @copyright  Copyright (c) 2011 Full Ambit Media, LLC (http://www.fullambit.com)
 * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 */
-/*
-	!table! = $tableName
-	!prefix! = dynamicPDO::tablePrefix
-*/
-function admin_settings_addQueries() {
-	return array(
-		'updateSettings' => '
-			UPDATE !prefix!settings!lang!
-			SET value= :value
-			WHERE name= :name
-			AND category= "cms"
-		',
-		'updateGroupedSettings' => '
-			UPDATE !prefix!settings!lang!
-			SET value= :value
-			WHERE name= :name
-			AND category= :group
-		',
+$this->action=$data->linkRoot.'admin/settings/group/'.$data->action[3];
+$this->formPrefix='settings_';
+$this->caption=$data->action[3].' '.$data->phrases['core']['settings'];
+$this->submitTitle=$data->phrases['settings']['submitButton'];
+$this->fromForm='settings';
+$this->fields=array();
+foreach($data->settings[$data->action[3]] as $key=>$setting){
+	$this->fields[$key] = array(
+		'label' => ((isset($data->phrases[$data->action[3]][$key]))?$data->phrases[$data->action[3]][$key]:$key),
+		'required' => FALSE/*empty($setting)*/,
+		'tag' => 'input',
+		'value' => $setting,
+		'params' => array(
+			'type' => 'text',
+			'size' => 128
+		),
 	);
 }
-?>
