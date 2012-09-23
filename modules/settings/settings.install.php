@@ -26,7 +26,7 @@ function settings_settings() {
     return array(
         'name'      => 'settings',
         'shortName' => 'settings',
-		'version'   => '1.0.1'
+		'version'   => '1.1'
     );
 }
 
