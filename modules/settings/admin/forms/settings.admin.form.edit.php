@@ -276,10 +276,9 @@ $this->fields=array(
 		'label' => $data->phrases['settings']['labelUseCDN'],
 		'required' => false,
 		'tag' => 'input',
-		'checked' => ($data->settings['useCDN'] == '1') ? 'checked' : '',
-		'value' => '1',
+		'checked' => ($data->settings['useCDN']) ? 'checked' : '',
 		'params' => array(
-			'type' => 'checkbox'
+			'type' => 'checkbox',
 		),
 		'group' => $data->phrases['settings']['groupCDN']
 	),
