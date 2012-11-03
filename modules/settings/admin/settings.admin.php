@@ -199,11 +199,15 @@ function settings_admin_buildContent($data,$db) {
 					// Loop Through Form Fields //
 					$languageExceptions = array('siteTitle','rawFooterContent','parsedFooterContent');
 					$statement=$db->prepare('updateSettings','admin_settings');
+					$data->output['settingsForm']->populateFromPostData();
 					foreach ($data->output['settingsForm']->fields as $fieldKey => $fieldData) {
 						if (!empty($fieldData['updated'])) {
 							$data->output['secondSidebar'].='
 								<li class="changed"><b>'.$fieldKey.'</b><span> updated</span></li>';
 							
+							if($fieldData['params']['type']==='checkbox'){
+								$fieldData[$fieldData['updated']]=($fieldData[$fieldData['updated']]==='checked'?'1':'0');
+							}
 							$statement->execute(array(
 								'value' => $fieldData[$fieldData['updated']],
 								'name' => $fieldKey
