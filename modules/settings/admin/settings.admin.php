@@ -76,9 +76,9 @@ function settings_admin_buildContent($data,$db) {
 						));
 						common_updateAcrossLanguageTables($data,$db,'settings',array('name'=>substr($fieldKey,1),'group'=>$data->action[3]),array('value'=>$fieldData),TRUE);
 					}
+					$data->output['secondSidebar']='<h2>Settings Saved</h2>';
 				}
 			}
-			$data->output['secondSidebar']='<h2>Settings Saved</h2>';
 			break;
 		default:
 			// Poulate Time Zone List
