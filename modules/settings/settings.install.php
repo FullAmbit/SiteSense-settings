@@ -52,6 +52,7 @@ function settings_install($db,$drop=false,$firstInstall=false,$lang="en_us") {
         'showPerPage' => 5,
         'rawFooterContent' => '&copy; SiteSense',
         'parsedFooterContent' => '&copy; SiteSense',
+		'cdnPlugin' => '',
         'cdnSmall' => '',
         'cdnFlash' => '',
         'cdnLarge' => '',

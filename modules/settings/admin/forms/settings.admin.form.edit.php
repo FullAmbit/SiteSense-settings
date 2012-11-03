@@ -286,6 +286,7 @@ $this->fields=array(
 		'label' => $data->phrases['settings']['labelCDNPlugin'],
 		'required' => false,
 		'tag' => 'select',
+		'value' => $data->settings['cdnPlugin'],
 		'options' => array(),
 		'group' => $data->phrases['settings']['groupCDN']
 	),
@@ -305,7 +306,8 @@ $this->fields=array(
 			</p>
 		',
 		'group' => $data->phrases['settings']['groupCDN']
-	),'cdnLarge' => array(
+	),
+	'cdnLarge' => array(
 		'label' => $data->phrases['settings']['labelCDNLarge'],
 		'required' => false,
 		'tag' => 'input',

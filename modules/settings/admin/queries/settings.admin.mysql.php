@@ -28,6 +28,11 @@
 */
 function admin_settings_addQueries() {
 	return array(
+		'createBasicSetting' => '
+			INSERT INTO !prefix!settings!lang!
+			       ( name, category)
+			VALUES (:name,"cms")
+		',
 		'updateSettings' => '
 			UPDATE !prefix!settings!lang!
 			SET value= :value

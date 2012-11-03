@@ -202,6 +202,12 @@ function settings_admin_buildContent($data,$db) {
 					$data->output['settingsForm']->populateFromPostData();
 					foreach ($data->output['settingsForm']->fields as $fieldKey => $fieldData) {
 						if (!empty($fieldData['updated'])) {
+							if(!isset($data->settings[$fieldKey])){
+								$statement=$db->prepare('createBasicSetting','admin_settings');
+								$statement->execute(array(
+									':name' => $fieldKey,
+								));
+							}
 							$data->output['secondSidebar'].='
 								<li class="changed"><b>'.$fieldKey.'</b><span> updated</span></li>';
 							
