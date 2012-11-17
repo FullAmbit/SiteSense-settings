@@ -22,14 +22,9 @@
 * @copyright  Copyright (c) 2011 Full Ambit Media, LLC (http://www.fullambit.com)
 * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 */
-function settings_settings() {
-    return array(
-        'name'      => 'settings',
-        'shortName' => 'settings',
-		'version'   => '1.1'
-    );
+function settings_settings() {	return array(	    'name'      => 'settings',	    'shortName' => 'settings',
+		'version'   => '1.1'	);
 }
-
 function settings_install($db,$drop=false,$firstInstall=false,$lang="en_us") {
 	$structures = array(
 		'settings' => array(
@@ -40,38 +35,8 @@ function settings_install($db,$drop=false,$firstInstall=false,$lang="en_us") {
 			'UNIQUE(`name`,`category`)',
 		)
 	);
-	$defaultSettings = array(
-        'siteTitle' => 'SiteSense',
-        'homepage' => 'pages/home',
-        'theme' => 'default',
-        'characterEncoding' => 'utf-8',
-        'compressionEnabled' => 0,
-        'compressionLevel' => 9,
-        'userSessionTimeOut' => 1800, /* in seconds */
-        'useModRewrite' => true,
-        'hideContentGuests' => 'no',
-        'showPerPage' => 5,
-        'rawFooterContent' => '&copy; SiteSense',
-        'parsedFooterContent' => '&copy; SiteSense',
-		'cdnPlugin' => '',
-        'cdnSmall' => '',
-        'cdnFlash' => '',
-        'cdnLarge' => '',
-        'useCDN' => '0',
-        'cdnBaseDir' => '',
-        'defaultBlog' => 'news',
-        'useBBCode' => '1',
-        'jsEditor' => 'ckeditor',
-        'verifyEmail' => 1,
-        'requireActivation' => 0,
-        'removeAttribution' => 0,
-        'defaultGroup' => 0,
-        'defaultTimeZone' => 'America/New_York'
-    );
-    
-    $db->createTable('settings',$structures['settings'],$lang);
-    
-    if($firstInstall){
+	$defaultSettings = array(	    'siteTitle' => 'SiteSense',	    'homepage' => 'pages/home',	    'theme' => 'default',	    'characterEncoding' => 'utf-8',	    'compressionEnabled' => 0,	    'compressionLevel' => 9,	    'userSessionTimeOut' => 1800, /* in seconds */	    'useModRewrite' => true,	    'hideContentGuests' => 'no',	    'showPerPage' => 5,	    'rawFooterContent' => '&copy; SiteSense',	    'parsedFooterContent' => '&copy; SiteSense',
+		'cdnPlugin' => '',	    'cdnSmall' => '',	    'cdnFlash' => '',	    'cdnLarge' => '',	    'useCDN' => '0',	    'cdnBaseDir' => '',	    'defaultBlog' => 'news',	    'useBBCode' => '1',	    'jsEditor' => 'ckeditor',	    'verifyEmail' => 1,	    'requireActivation' => 0,	    'removeAttribution' => 0,	    'defaultGroup' => 0,	    'defaultTimeZone' => 'America/New_York'	);	$db->createTable('settings',$structures['settings'],$lang);	if($firstInstall){
 	    $statement = $db->prepare('addSetting','installer',array('!lang!'=>'en_us'));
 	    foreach($defaultSettings as $settingName => $settingValue){
 		    $statement->execute(array(
@@ -79,10 +44,6 @@ function settings_install($db,$drop=false,$firstInstall=false,$lang="en_us") {
 		    	':category' => 'cms',
 		    	':value' => $settingValue
 		    ));
-	    }
-    }
-    
-    return NULL;
+	    }	}	return NULL;
 }
-
 ?>
