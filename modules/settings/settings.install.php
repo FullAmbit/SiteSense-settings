@@ -36,7 +36,8 @@ function settings_install($db,$drop=false,$firstInstall=false,$lang="en_us") {
 			'id'		=> SQR_IDKey,
 			'name'		=> 'VARCHAR(127) NOT NULL',
 			'category'	=> 'VARCHAR(31) DEFAULT NULL',
-			'value'		=> 'MEDIUMTEXT'
+			'value'		=> 'MEDIUMTEXT',
+			'UNIQUE(`name`,`category`)',
 		)
 	);
 	$defaultSettings = array(

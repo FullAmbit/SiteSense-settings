@@ -203,8 +203,8 @@ function settings_admin_buildContent($data,$db) {
 					foreach ($data->output['settingsForm']->fields as $fieldKey => $fieldData) {
 						if (!empty($fieldData['updated'])) {
 							if(!isset($data->settings[$fieldKey])){
-								$statement=$db->prepare('createBasicSetting','admin_settings');
-								$statement->execute(array(
+								$createStatement=$db->prepare('createBasicSetting','admin_settings');
+								$createStatement->execute(array(
 									':name' => $fieldKey,
 								));
 							}
@@ -216,7 +216,7 @@ function settings_admin_buildContent($data,$db) {
 							}
 							$statement->execute(array(
 								'value' => $fieldData[$fieldData['updated']],
-								'name' => $fieldKey
+								'name' =>  $fieldKey
 							));
 							
 							//---Update Across All Langauges--//
