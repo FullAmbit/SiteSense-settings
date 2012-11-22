@@ -211,7 +211,7 @@ function settings_admin_buildContent($data,$db) {
 							$data->output['secondSidebar'].='
 								<li class="changed"><b>'.$fieldKey.'</b><span> updated</span></li>';
 							
-							if($fieldData['params']['type']==='checkbox'){
+							if(isset($fieldData['params']['type'])&&$fieldData['params']['type']==='checkbox'){
 								$fieldData[$fieldData['updated']]=($fieldData[$fieldData['updated']]==='checked'?'1':'0');
 							}
 							$statement->execute(array(
